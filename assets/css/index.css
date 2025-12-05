@@ -1,0 +1,623 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-red: #E31C1C;
+    --dark-red: #B01212;
+    --black: #0A0A0A;
+    --dark-gray: #1A1A1A;
+    --white: #FFFFFF;
+    --gold: #FFD700;
+    --purple: #9B59B6;
+    --blue: #3498DB;
+    --green: #2ECC71;
+}
+
+html {
+    background: var(--black);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--black);
+    color: var(--white);
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Header */
+header {
+    position: fixed;
+    width: 100%;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border-bottom: 2px solid var(--primary-red);
+}
+
+.success-message {
+    color: #4CAF50;
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-red);
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--white);
+    text-decoration: none;
+    transition: color 0.3s;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    color: var(--primary-red);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-name {
+    color: var(--primary-red);
+    font-weight: bold;
+}
+
+.logout-btn {
+    padding: 0.5rem 1rem;
+    background: var(--primary-red);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: var(--dark-red);
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Auth Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--dark-gray);
+    padding: 3rem;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    border: 2px solid var(--primary-red);
+    position: relative;
+}
+
+.modal-title {
+    font-size: 2rem;
+    color: var(--primary-red);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid var(--dark-gray);
+    background: var(--black);
+    color: var(--white);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-red);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.submit-btn:hover {
+    background: var(--dark-red);
+}
+
+.switch-auth {
+    text-align: center;
+    margin-top: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.switch-auth a {
+    color: var(--primary-red);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.error-message {
+    color: var(--primary-red);
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Main Content */
+main {
+    padding-top: 80px;
+    min-height: 100vh;
+}
+
+/* Hero Section */
+.hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 50%, var(--dark-red) 100%);
+    padding: 2rem;
+}
+
+.hero-logo {
+    font-size: 5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary-red), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--white);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 4rem;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.stat-card {
+    background: var(--dark-gray);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid var(--primary-red);
+}
+
+.stat-number {
+    font-size: 3rem;
+    color: var(--primary-red);
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.about-content {
+    background: var(--dark-gray);
+    padding: 3rem;
+    border-radius: 20px;
+    line-height: 1.8;
+    margin-top: 4rem;
+    max-width: 1200px;
+}
+
+.about-content h2 {
+    color: var(--primary-red);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.about-content p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================ */
+/* SALÓN DE LA FAMA */
+/* ============================================ */
+
+.hall-of-fame {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--black) 0%, #1a0a0a 50%, var(--black) 100%);
+    padding: 6rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hall-of-fame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(227, 28, 28, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.hall-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.hall-title {
+    font-size: 4rem;
+    text-align: center;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--primary-red), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.hall-icon {
+    display: inline-block;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.hall-subtitle {
+    text-align: center;
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 4rem;
+    font-style: italic;
+}
+
+.legends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 3rem;
+    margin-bottom: 4rem;
+}
+
+.legend-card {
+    background: linear-gradient(145deg, var(--dark-gray), var(--black));
+    border-radius: 25px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    border: 3px solid transparent;
+}
+
+.legend-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transform: rotate(45deg);
+    transition: all 0.6s;
+}
+
+.legend-card:hover::before {
+    left: 100%;
+}
+
+.legend-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.luna-card {
+    border-color: #ff69b4;
+    background: linear-gradient(145deg, rgba(255, 105, 180, 0.1), var(--black));
+}
+
+.luna-card:hover {
+    box-shadow: 0 20px 60px rgba(255, 105, 180, 0.4);
+}
+
+.nex-card {
+    border-color: var(--blue);
+    background: linear-gradient(145deg, rgba(52, 152, 219, 0.1), var(--black));
+}
+
+.nex-card:hover {
+    box-shadow: 0 20px 60px rgba(52, 152, 219, 0.4);
+}
+
+.joaco-card {
+    border-color: #e74c3c;
+    background: linear-gradient(145deg, rgba(231, 76, 60, 0.1), var(--black));
+}
+
+.joaco-card:hover {
+    box-shadow: 0 20px 60px rgba(231, 76, 60, 0.4);
+}
+
+.nico-card {
+    border-color: var(--gold);
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), var(--black));
+}
+
+.nico-card:hover {
+    box-shadow: 0 20px 60px rgba(255, 215, 0, 0.4);
+}
+
+.legend-crown {
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    font-size: 3rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+}
+
+.legend-badge {
+    display: inline-block;
+    background: var(--primary-red);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.legend-name {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, white, var(--primary-red));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.legend-title {
+    font-size: 1.1rem;
+    color: var(--gold);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.legend-description {
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 2rem;
+}
+
+.legend-description p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.legend-highlight {
+    color: var(--primary-red);
+    font-weight: bold;
+    font-size: 1.1rem !important;
+    margin-top: 1rem !important;
+}
+
+.legend-stats {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hall-footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(227, 28, 28, 0.1);
+    border-radius: 20px;
+    border: 2px solid var(--primary-red);
+}
+
+.update-notice {
+    font-size: 1.2rem;
+    color: var(--gold);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.hall-message {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--black);
+        flex-direction: column;
+        padding: 2rem;
+        gap: 1rem;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .hero-logo {
+        font-size: 3rem;
+    }
+
+    .modal-content {
+        padding: 2rem;
+    }
+
+    .hall-title {
+        font-size: 2.5rem;
+    }
+
+    .legends-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .legend-name {
+        font-size: 2rem;
+    }
+}
+/* Imágenes de los legend-cards */
+.legend-image {
+width: 100%;
+height: 450px; /* altura fija para todas */
+margin-bottom: 1.5rem;
+overflow: hidden;
+border-radius: 20px;
+border: 2px solid var(--primary-red); /* opcional: bordes para destacar */
+}
+
+.legend-image img {
+width: 100%;
+height: 100%;
+object-fit: cover; /* asegura que la imagen llene el contenedor sin deformarse */
+display: block;
+transition: transform 0.3s ease;
+}
+
+.legend-card:hover .legend-image img {
+transform: scale(1.05); /* ligero zoom al pasar el mouse */
+}
+

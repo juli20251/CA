@@ -269,30 +269,30 @@ try {
         // RESULTADOS
         // =====================
         case 'obtener_resultados':
-            $stmt = $pdo->query("SELECT * FROM categorias ORDER BY orden");
-            $categorias = $stmt->fetchAll();
-            
-            foreach ($categorias as &$categoria) {
-                $stmt = $pdo->prepare("
-                    SELECT n.*, COUNT(v.id) as votos
-                    FROM nominados n
-                    LEFT JOIN votos v ON n.id = v.nominado_id
-                    WHERE n.categoria_id = ?
-                    GROUP BY n.id
-                    ORDER BY votos DESC
-                ");
-                $stmt->execute([$categoria['id']]);
-                $categoria['resultados'] = $stmt->fetchAll();
-                
-                $totalVotosCategoria = array_sum(array_column($categoria['resultados'], 'votos'));
-                $categoria['total_votos'] = $totalVotosCategoria;
-            }
-            
-            echo json_encode([
-                'success' => true,
-                'categorias' => $categorias
-            ], JSON_UNESCAPED_UNICODE);
-            break;
+    $stmt = $pdo->query("SELECT * FROM categorias ORDER BY orden");
+    $categorias = $stmt->fetchAll();
+    
+    foreach ($categorias as &$categoria) {
+        $stmt = $pdo->prepare("
+            SELECT n.*, COUNT(v.id) as votos
+            FROM nominados n
+            LEFT JOIN votos v ON n.id = v.nominado_id
+            WHERE n.categoria_id = ?
+            GROUP BY n.id
+            ORDER BY votos DESC
+        ");
+        $stmt->execute([$categoria['id']]);
+        $categoria['resultados'] = $stmt->fetchAll();
+        
+        $totalVotosCategoria = array_sum(array_column($categoria['resultados'], 'votos'));
+        $categoria['total_votos'] = $totalVotosCategoria;
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'categorias' => $categorias
+    ], JSON_UNESCAPED_UNICODE);
+    break;
             
             case 'listar_clips_nominados':
     $estado = $_POST['estado'] ?? 'todos';
@@ -405,6 +405,92 @@ case 'actualizar_categoria':
     echo json_encode([
         'success' => true,
         'respuestas' => $stmt->fetchAll()
+    ], JSON_UNESCAPED_UNICODE);
+    break;
+
+    case 'listar_respuestas_texto':
+    $categoriaId = intval($_POST['categoria_id'] ?? 0);
+    
+    $sql = "
+        SELECT r.*, u.nombre as usuario_nombre, u.email as usuario_email, c.nombre as categoria_nombre
+        FROM respuestas_texto r
+        INNER JOIN usuarios u ON r.usuario_id = u.id
+        INNER JOIN categorias c ON r.categoria_id = c.id
+    ";
+    
+    if ($categoriaId > 0) {
+        $sql .= " WHERE r.categoria_id = ?";
+        $stmt = $pdo->prepare($sql . " ORDER BY r.fecha_respuesta DESC");
+        $stmt->execute([$categoriaId]);
+    } else {
+        $stmt = $pdo->query($sql . " ORDER BY r.fecha_respuesta DESC");
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'respuestas' => $stmt->fetchAll()
+    ], JSON_UNESCAPED_UNICODE);
+    break;
+
+case 'eliminar_respuesta_admin':
+    $respuestaId = intval($_POST['respuesta_id'] ?? 0);
+    
+    if ($respuestaId <= 0) {
+        throw new Exception('ID de respuesta no válido');
+    }
+    
+    $stmt = $pdo->prepare("DELETE FROM respuestas_texto WHERE id = ?");
+    $stmt->execute([$respuestaId]);
+    
+    if ($stmt->rowCount() > 0) {
+        echo json_encode([
+            'success' => true,
+            'mensaje' => 'Respuesta eliminada correctamente'
+        ], JSON_UNESCAPED_UNICODE);
+    } else {
+        throw new Exception('No se pudo eliminar la respuesta');
+    }
+    break;
+
+case 'obtener_respuestas_usuario':
+    $usuarioId = intval($_POST['usuario_id'] ?? 0);
+    
+    if ($usuarioId <= 0) {
+        throw new Exception('ID de usuario no válido');
+    }
+    
+    $sql = "
+        SELECT r.*, u.nombre as usuario_nombre, u.email as usuario_email, c.nombre as categoria_nombre
+        FROM respuestas_texto r
+        INNER JOIN usuarios u ON r.usuario_id = u.id
+        INNER JOIN categorias c ON r.categoria_id = c.id
+        WHERE r.usuario_id = ?
+        ORDER BY r.fecha_respuesta DESC
+    ";
+    
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$usuarioId]);
+    
+    echo json_encode([
+        'success' => true,
+        'respuestas' => $stmt->fetchAll()
+    ], JSON_UNESCAPED_UNICODE);
+    break;
+
+case 'listar_usuarios_con_respuestas':
+    $sql = "
+        SELECT u.id, u.nombre, u.email, COUNT(r.id) as total_respuestas
+        FROM usuarios u
+        INNER JOIN respuestas_texto r ON u.id = r.usuario_id
+        GROUP BY u.id
+        ORDER BY u.nombre
+    ";
+    
+    $stmt = $pdo->query($sql);
+    
+    echo json_encode([
+        'success' => true,
+        'usuarios' => $stmt->fetchAll()
     ], JSON_UNESCAPED_UNICODE);
     break;
 

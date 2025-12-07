@@ -114,23 +114,27 @@ $progreso = $totalCategorias > 0 ? round(($categoriasVotadas / $totalCategorias)
                 </div>
                 
             <?php else: ?>
-                <!-- Barra de Progreso -->
                 <div class="progreso-votacion">
-                    <div class="progreso-info">
-                        <h3>📊 Tu Progreso de Votación</h3>
-                        <p><?= $categoriasVotadas ?> de <?= $totalCategorias ?> categorías completadas</p>
-                    </div>
-                    <div class="progreso-visual">
-                        <div class="progreso-bar-container">
-                            <div class="progreso-bar" style="width: <?= $progreso ?>%">
-                                <span class="progreso-text"><?= $progreso ?>%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="progreso-info">
+        <h3>📊 Tu Progreso de Votación</h3>
+        <p><?= $categoriasVotadas ?> de <?= $totalCategorias ?> categorías completadas</p>
+    </div>
+    <div class="progreso-visual">
+        <div class="progreso-bar-container">
+            <div class="progreso-bar" style="width: <?= $progreso ?>%">
+                <span class="progreso-text"><?= $progreso ?>%</span>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <!-- Mensaje de éxito/error -->
-                <div id="mensajeGlobal" style="display: none;"></div>
+<!-- Panel de Confirmación -->
+<div id="panelConfirmacion" class="panel-confirmacion">
+    <!-- Se carga dinámicamente -->
+</div>
+
+<!-- Mensaje de éxito/error -->
+<div id="mensajeGlobal" style="display: none;"></div>
                 
                 <!-- Categorías de Votación -->
                 <div class="categorias-container">
@@ -322,5 +326,6 @@ $progreso = $totalCategorias > 0 ? round(($categoriasVotadas / $totalCategorias)
     <script src="votacion.js"></script>
     <script src="nominar_clip.js"></script>
     <script src="respuestas_texto.js"></script>
+    <script src="confirmar_votos.js"></script>
 </body>
 </html>

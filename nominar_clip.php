@@ -13,8 +13,24 @@ $accion = $_POST['accion'] ?? '';
 try {
     switch ($accion) {
         case 'nominar_clip':
+
+            $votacionesAbiertas = obtenerConfig('votaciones_abiertas', $pdo) === 'true';
+    if (!$votacionesAbiertas) {
+        throw new Exception('Las votaciones están cerradas');
+    }
+    
+    // NUEVO: Verificar si ya confirmó
+    $stmt = $pdo->prepare("SELECT votos_confirmados FROM usuarios WHERE id = ?");
+    $stmt->execute([$_SESSION['usuario_id']]);
+    $usuario = $stmt->fetch();
+    
+    if ($usuario['votos_confirmados'] == 1) {
+        throw new Exception('⛔ Has confirmado tu participación. Ya no puedes hacer cambios.');
+    }
+    
             $categoriaId = intval($_POST['categoria_id'] ?? 0);
             $votacionesAbiertas = obtenerConfig('votaciones_abiertas', $pdo) === 'true';
+
 if (!$votacionesAbiertas) {
     throw new Exception('Las votaciones están cerradas');
 }

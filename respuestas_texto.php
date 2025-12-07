@@ -19,6 +19,14 @@ try {
                 throw new Exception('Las votaciones están cerradas');
             }
             
+            $stmt = $pdo->prepare("SELECT votos_confirmados FROM usuarios WHERE id = ?");
+    $stmt->execute([$_SESSION['usuario_id']]);
+    $usuario = $stmt->fetch();
+    
+    if ($usuario['votos_confirmados'] == 1) {
+        throw new Exception('⛔ Has confirmado tus votos. Ya no puedes hacer cambios.');
+    }
+
             $categoriaId = intval($_POST['categoria_id'] ?? 0);
             $respuesta = trim($_POST['respuesta'] ?? '');
             

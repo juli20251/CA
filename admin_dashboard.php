@@ -74,6 +74,9 @@ foreach ($categorias as &$categoria) {
                 <a href="#" class="nav-link" onclick="mostrarSeccion('resultados')">
                     <span>📈</span> Resultados
                 </a>
+                <a href="#" class="nav-link" onclick="mostrarSeccion('respuestas')">
+                    <span>✍️</span> Respuestas de Texto
+                </a>
                 <a href="#" class="nav-link" onclick="cerrarSesion()">
                     <span>🚪</span> Salir
                 </a>
@@ -175,116 +178,119 @@ foreach ($categorias as &$categoria) {
                 </div>
             </section>
 
+            <!-- Configuración Section -->
             <section id="seccionConfiguracion" class="admin-section" style="display: none;">
-    <h2>Configuración del Sistema</h2>
-    
-    <div class="config-panel">
-        <h3>Control de Votaciones</h3>
-        <div class="config-controls">
-            <div class="control-item">
-                <label class="switch">
-                    <input type="checkbox" id="toggleVotaciones" <?= $votacionesAbiertas ? 'checked' : '' ?> onchange="toggleVotaciones()">
-                    <span class="slider"></span>
-                </label>
-                <span class="control-label">Votaciones Abiertas</span>
-            </div>
-            
-            <div class="control-item">
-                <label class="switch">
-                    <input type="checkbox" id="toggleTernas" <?= $mostrarTernas ? 'checked' : '' ?> onchange="toggleTernas()">
-                    <span class="slider"></span>
-                </label>
-                <span class="control-label">Mostrar Ternas</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Nueva sección para fecha de revelación -->
-    <div class="config-panel" style="margin-top: 1.5rem;">
-        <h3>⏰ Programar Revelación de Ternas</h3>
-        <p style="color: var(--admin-text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
-            Configura una fecha y hora para mostrar la cuenta regresiva. Las ternas se revelarán automáticamente cuando llegue el momento.
-        </p>
-        
-        <div class="form-group">
-            <label>Fecha y Hora de Revelación</label>
-            <input 
-                type="datetime-local" 
-                id="fechaRevelacion" 
-                class="form-control" 
-                value="<?= obtenerConfig('fecha_revelacion', $pdo) ? date('Y-m-d\TH:i', strtotime(obtenerConfig('fecha_revelacion', $pdo))) : '' ?>"
-                style="max-width: 400px;">
-            <small>Deja vacío para no mostrar cuenta regresiva</small>
-        </div>
-        
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button class="btn btn-primary" onclick="guardarFechaRevelacion()">
-                💾 Guardar Fecha
-            </button>
-            <button class="btn btn-secondary" onclick="limpiarFechaRevelacion()">
-                🗑️ Limpiar Fecha
-            </button>
-        </div>
-        
-        <?php 
-        $fechaActual = obtenerConfig('fecha_revelacion', $pdo);
-        if ($fechaActual): 
-        ?>
-            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 8px; border: 1px solid var(--admin-border);">
-                <p style="margin: 0; color: var(--admin-text);">
-                    📅 <strong>Revelación programada para:</strong> 
-                    <?= date('d/m/Y - H:i', strtotime($fechaActual)) ?>
-                </p>
-                <p style="margin: 0.5rem 0 0 0; color: var(--admin-text-secondary); font-size: 0.875rem;">
-                    La cuenta regresiva se mostrará en la página principal hasta que las ternas estén visibles.
-                </p>
-            </div>
-        <?php endif; ?>
-    </div>
-    
-    <div id="mensajeConfig" class="mensaje-exito" style="display: none; margin-top: 1.5rem;"></div>
-</section>
+                <h2>Configuración del Sistema</h2>
+                
+                <div class="config-panel">
+                    <h3>Control de Votaciones</h3>
+                    <div class="config-controls">
+                        <div class="control-item">
+                            <label class="switch">
+                                <input type="checkbox" id="toggleVotaciones" <?= $votacionesAbiertas ? 'checked' : '' ?> onchange="toggleVotaciones()">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="control-label">Votaciones Abiertas</span>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label class="switch">
+                                <input type="checkbox" id="toggleTernas" <?= $mostrarTernas ? 'checked' : '' ?> onchange="toggleTernas()">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="control-label">Mostrar Ternas</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-panel" style="margin-top: 1.5rem;">
+                    <h3>⏰ Programar Revelación de Ternas</h3>
+                    <p style="color: var(--admin-text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                        Configura una fecha y hora para mostrar la cuenta regresiva.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label>Fecha y Hora de Revelación</label>
+                        <input 
+                            type="datetime-local" 
+                            id="fechaRevelacion" 
+                            class="form-control" 
+                            value="<?= obtenerConfig('fecha_revelacion', $pdo) ? date('Y-m-d\TH:i', strtotime(obtenerConfig('fecha_revelacion', $pdo))) : '' ?>"
+                            style="max-width: 400px;">
+                        <small>Deja vacío para no mostrar cuenta regresiva</small>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="guardarFechaRevelacion()">
+                            💾 Guardar Fecha
+                        </button>
+                        <button class="btn btn-secondary" onclick="limpiarFechaRevelacion()">
+                            🗑️ Limpiar Fecha
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="mensajeConfig" class="mensaje-exito" style="display: none; margin-top: 1.5rem;"></div>
+            </section>
 
             <!-- Resultados Section -->
-            <section id="seccionResultados" class="admin-section" style="display: none;">
-                <h2>Resultados en Tiempo Real</h2>
-                <button class="btn btn-secondary" onclick="actualizarResultados()">🔄 Actualizar Resultados</button>
+<section id="seccionResultados" class="admin-section" style="display: none;">
+    <div class="section-header">
+        <h2>Resultados en Tiempo Real</h2>
+        <button class="btn btn-secondary" onclick="actualizarResultados()">
+            🔄 Actualizar Resultados
+        </button>
+    </div>
+    
+    <div id="resultadosContainer" class="resultados-container">
+        <div class="loading">⏳ Cargando resultados...</div>
+    </div>
+</section>
+
+            <!-- Respuestas de Texto Section -->
+            <section id="seccionRespuestas" class="admin-section" style="display: none;">
+                <h2>Respuestas de Texto Libre</h2>
                 
-                <div class="resultados-container">
-                    <?php foreach ($categorias as $categoria): ?>
-                        <div class="resultado-categoria">
-                            <h3><?= e($categoria['nombre']) ?></h3>
-                            <p class="total-votos-cat">Total de votos: <?= $categoria['total_votos'] ?></p>
-                            
-                            <div class="resultados-tabla">
-                                <?php foreach ($categoria['resultados'] as $resultado): ?>
-                                    <?php 
-                                    $porcentaje = $categoria['total_votos'] > 0 
-                                        ? round(($resultado['votos'] / $categoria['total_votos']) * 100, 2) 
-                                        : 0;
-                                    ?>
-                                    <div class="resultado-item">
-                                        <div class="resultado-info">
-                                            <img src="<?= e($resultado['imagen_url']) ?>" alt="<?= e($resultado['nombre']) ?>" class="resultado-img">
-                                            <div>
-                                                <h4><?= e($resultado['nombre']) ?></h4>
-                                                <p><?= $resultado['votos'] ?> votos (<?= $porcentaje ?>%)</p>
-                                            </div>
-                                        </div>
-                                        <div class="resultado-barra">
-                                            <div class="barra-progreso" style="width: <?= $porcentaje ?>%"></div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                <!-- Pestañas -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" onclick="cambiarTabRespuestas('categoria')">
+                        📋 Por Categoría
+                    </button>
+                    <button class="tab-btn" onclick="cambiarTabRespuestas('usuario')">
+                        👤 Por Usuario
+                    </button>
+                </div>
+                
+                <!-- Tab: Por Categoría -->
+                <div id="tabCategoria" class="tab-content active">
+                    <div class="filtros-respuestas">
+                        <select id="filtroCategoriaRespuestas" class="form-control" onchange="cargarRespuestasPorCategoria()">
+                            <option value="">Todas las categorías de texto libre</option>
+                        </select>
+                    </div>
+                    
+                    <div id="listaRespuestasCategoria" class="respuestas-container">
+                        <!-- Se carga dinámicamente -->
+                    </div>
+                </div>
+                
+                <!-- Tab: Por Usuario -->
+                <div id="tabUsuario" class="tab-content" style="display: none;">
+                    <div class="filtros-respuestas">
+                        <select id="filtroUsuarioRespuestas" class="form-control" onchange="cargarRespuestasPorUsuario()">
+                            <option value="">Selecciona un usuario</option>
+                        </select>
+                    </div>
+                    
+                    <div id="listaRespuestasUsuario" class="respuestas-container">
+                        <!-- Se carga dinámicamente -->
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Modal Categoría -->
+<!-- Modal Categoría -->
     <div id="modalCategoria" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModalCategoria()">&times;</span>
@@ -317,14 +323,14 @@ foreach ($categorias as &$categoria) {
                 </div>
 
                 <div class="form-group">
-    <label>Tipo de Votación</label>
-    <select id="categoriaTipoVotacion" class="form-control">
-        <option value="normal">📊 Normal (con nominados cargados por admin)</option>
-        <option value="texto_libre">✍️ Texto Libre (usuarios escriben respuesta)</option>
-        <option value="nominacion_usuarios">🎬 Nominación de Clips (usuarios envían videos)</option>
-    </select>
-    <small>Tipo de interacción que tendrán los usuarios en esta categoría</small>
-</div>
+                    <label>Tipo de Votación</label>
+                    <select id="categoriaTipoVotacion" class="form-control">
+                        <option value="normal">📊 Normal (con nominados cargados por admin)</option>
+                        <option value="texto_libre">✍️ Texto Libre (usuarios escriben respuesta)</option>
+                        <option value="nominacion_usuarios">🎬 Nominación de Clips (usuarios envían videos)</option>
+                    </select>
+                    <small>Tipo de interacción que tendrán los usuarios en esta categoría</small>
+                </div>
                 
                 <div id="errorCategoria" class="error-message"></div>
                 
@@ -401,5 +407,6 @@ foreach ($categorias as &$categoria) {
     <script src="js/scripts.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/admin-animations.js"></script>
+    <script src="js/admin-respuestas.js"></script>
 </body>
 </html>

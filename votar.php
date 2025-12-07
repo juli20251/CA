@@ -11,6 +11,21 @@ if (!estaLogueado()) {
 $categoriaId = $_POST['categoria_id'] ?? 0;
 $nominadoId = $_POST['nominado_id'] ?? 0;
 
+$stmt = $pdo->prepare("SELECT votos_confirmados FROM usuarios WHERE id = ?");
+$stmt->execute([$_SESSION['usuario_id']]);
+$usuario = $stmt->fetch();
+
+if ($usuario['votos_confirmados'] == 1) {
+    echo json_encode([
+        'success' => false, 
+        'mensaje' => '⛔ Has confirmado tus votos. Ya no puedes hacer cambios.'
+    ]);
+    exit;
+}
+
+$categoriaId = $_POST['categoria_id'] ?? 0;
+$nominadoId = $_POST['nominado_id'] ?? 0;
+
 try {
     // Verificar que las votaciones estén abiertas
     $votacionesAbiertas = obtenerConfig('votaciones_abiertas', $pdo) === 'true';

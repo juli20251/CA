@@ -8,27 +8,44 @@ console.log('✅ Admin panel cargado');
 // NAVEGACIÓN
 // =====================
 function mostrarSeccion(seccion) {
-    document.querySelectorAll('.admin-section').forEach(sec => {
-        sec.style.display = 'none';
-    });
+    // Ocultar todas las secciones
+    document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
     
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
+    // Remover active de todos los links
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     
-    const seccionElement = document.getElementById('seccion' + seccion.charAt(0).toUpperCase() + seccion.slice(1));
-    if (seccionElement) {
-        seccionElement.style.display = 'block';
-    }
+    // Mostrar la sección seleccionada
+    const seccionId = `seccion${seccion.charAt(0).toUpperCase() + seccion.slice(1)}`;
+    const elemento = document.getElementById(seccionId);
     
-    event.target.classList.add('active');
-    
-    // Cargar datos según la sección
-    if (seccion === 'categorias') {
-        cargarCategorias();
-    } else if (seccion === 'nominados') {
-        cargarNominados();
-        cargarCategoriasSelect();
+    if (elemento) {
+        elemento.style.display = 'block';
+        
+        // Activar el link correspondiente
+        event.target.closest('.nav-link').classList.add('active');
+        
+        // Cargar datos según la sección
+        switch(seccion) {
+            case 'dashboard':
+                // Dashboard ya está cargado desde PHP
+                break;
+            case 'categorias':
+                cargarCategorias();
+                break;
+            case 'nominados':
+                cargarNominados();
+                cargarCategoriasSelect();
+                break;
+            case 'configuracion':
+                // Configuración ya está cargada
+                break;
+            case 'resultados':
+                actualizarResultados(); // ← ESTO ES IMPORTANTE
+                break;
+            case 'respuestas':
+                cargarCategoriasTextoLibre();
+                break;
+        }
     }
 }
 
@@ -741,9 +758,207 @@ async function eliminarNominado(id) {
 // =====================
 // RESULTADOS
 // =====================
+// ================================================
+// RESULTADOS
+// ================================================
+
 async function actualizarResultados() {
-    location.reload();
+    console.log('🔍 Actualizando resultados...');
+    
+    const container = document.getElementById('resultadosContainer');
+    
+    if (!container) {
+        console.error('❌ Container de resultados no encontrado');
+        alert('Error: No se puede cargar la sección de resultados.');
+        return;
+    }
+    
+    console.log('✅ Container encontrado');
+    container.innerHTML = '<div class="loading">⏳ Cargando resultados...</div>';
+    
+    try {
+        const response = await fetch('admin_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'accion=obtener_resultados'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Datos recibidos:', data);
+        
+        if (data.success) {
+            if (!data.categorias || data.categorias.length === 0) {
+                container.innerHTML = `
+                    <div class="no-resultados">
+                        <div class="no-resultados-icon">📊</div>
+                        <h3>No hay resultados aún</h3>
+                        <p>Aún no se han registrado votos en las categorías.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            data.categorias.forEach(categoria => {
+                const categoriaDiv = crearCardResultado(categoria);
+                container.appendChild(categoriaDiv);
+            });
+            
+            console.log('✅ Resultados cargados correctamente');
+            mostrarNotificacionAdmin('Resultados actualizados', 'success');
+        } else {
+            throw new Error(data.mensaje || 'Error desconocido');
+        }
+    } catch (error) {
+        console.error('❌ Error al actualizar resultados:', error);
+        container.innerHTML = `
+            <div class="error" style="text-align: center; padding: 2rem; color: #ef4444;">
+                <h3>❌ Error al cargar resultados</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-secondary" onclick="actualizarResultados()" style="margin-top: 1rem;">
+                    🔄 Reintentar
+                </button>
+            </div>
+        `;
+    }
 }
+
+function crearCardResultado(categoria) {
+    const div = document.createElement('div');
+    div.className = 'resultado-categoria';
+    
+    let resultadosHTML = '';
+    
+    if (categoria.resultados && categoria.resultados.length > 0) {
+        categoria.resultados.forEach(resultado => {
+            const porcentaje = categoria.total_votos > 0 
+                ? Math.round((resultado.votos / categoria.total_votos) * 100 * 100) / 100
+                : 0;
+            
+            resultadosHTML += `
+                <div class="resultado-item">
+                    <div class="resultado-info">
+                        <img src="${resultado.imagen_url || ''}" 
+                             alt="${resultado.nombre || ''}" 
+                             class="resultado-img"
+                             onerror="this.style.display='none'">
+                        <div>
+                            <h4>${resultado.nombre || 'Sin nombre'}</h4>
+                            <p>${resultado.votos || 0} votos (${porcentaje}%)</p>
+                        </div>
+                    </div>
+                    <div class="resultado-barra">
+                        <div class="barra-progreso" style="width: ${porcentaje}%"></div>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        resultadosHTML = '<p class="sin-votos">No hay votos en esta categoría aún</p>';
+    }
+    
+    div.innerHTML = `
+        <h3>${categoria.nombre || 'Sin nombre'}</h3>
+        <p class="total-votos-cat">Total de votos: ${categoria.total_votos || 0}</p>
+        <div class="resultados-tabla">
+            ${resultadosHTML}
+        </div>
+    `;
+    
+    return div;
+}
+
+function mostrarNotificacionAdmin(mensaje, tipo = 'success') {
+    let notif = document.getElementById('notificacionAdmin');
+    
+    if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'notificacionAdmin';
+        notif.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease-out;
+            max-width: 300px;
+        `;
+        document.body.appendChild(notif);
+    }
+    
+    const colores = {
+        success: { bg: 'rgba(34, 197, 94, 0.95)', color: '#fff' },
+        error: { bg: 'rgba(239, 68, 68, 0.95)', color: '#fff' },
+        info: { bg: 'rgba(59, 130, 246, 0.95)', color: '#fff' }
+    };
+    
+    const color = colores[tipo] || colores.info;
+    notif.style.background = color.bg;
+    notif.style.color = color.color;
+    notif.textContent = mensaje;
+    notif.style.display = 'block';
+    
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        setTimeout(() => {
+            notif.style.display = 'none';
+            notif.style.opacity = '1';
+        }, 300);
+    }, 3000);
+}
+
+console.log('✅ Módulo de resultados cargado');
+
+// Agregar animación CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .sin-votos {
+        text-align: center;
+        padding: 2rem;
+        color: var(--admin-text-secondary);
+        font-style: italic;
+    }
+    
+    .no-resultados {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .no-resultados-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .no-resultados h3 {
+        color: var(--admin-text);
+        margin-bottom: 0.5rem;
+    }
+    
+    .no-resultados p {
+        color: var(--admin-text-secondary);
+    }
+`;
+document.head.appendChild(style);
 
 // =====================
 // CERRAR SESIÓN
@@ -791,3 +1006,312 @@ window.onclick = function(event) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Panel de administración inicializado');
 });
+// ================================================
+// GESTIÓN DE RESPUESTAS DE TEXTO - ADMIN
+// ================================================
+
+// Cambiar entre tabs
+function cambiarTabRespuestas(tab) {
+    // Cambiar botones activos
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Cambiar contenido
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+    });
+    
+    if (tab === 'categoria') {
+        document.getElementById('tabCategoria').style.display = 'block';
+        document.getElementById('tabCategoria').classList.add('active');
+        cargarCategoriasTextoLibre();
+    } else {
+        document.getElementById('tabUsuario').style.display = 'block';
+        document.getElementById('tabUsuario').classList.add('active');
+        cargarUsuariosConRespuestas();
+    }
+}
+
+// Cargar categorías de texto libre para el filtro
+async function cargarCategoriasTextoLibre() {
+    try {
+        const response = await fetch('admin_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'accion=listar_categorias'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const select = document.getElementById('filtroCategoriaRespuestas');
+            const categoriasTexto = data.categorias.filter(c => c.tipo_votacion === 'texto_libre');
+            
+            select.innerHTML = '<option value="">Todas las categorías de texto libre</option>';
+            
+            categoriasTexto.forEach(cat => {
+                select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+            });
+            
+            cargarRespuestasPorCategoria();
+        }
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+    }
+}
+
+// Cargar respuestas por categoría
+async function cargarRespuestasPorCategoria() {
+    const categoriaId = document.getElementById('filtroCategoriaRespuestas').value;
+    const container = document.getElementById('listaRespuestasCategoria');
+    
+    container.innerHTML = '<div class="loading">Cargando respuestas...</div>';
+    
+    try {
+        const response = await fetch('admin_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `accion=listar_respuestas_texto&categoria_id=${categoriaId}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.respuestas.length === 0) {
+                container.innerHTML = `
+                    <div class="no-respuestas">
+                        <div class="no-respuestas-icon">📝</div>
+                        <h3>No hay respuestas aún</h3>
+                        <p>Los usuarios aún no han enviado respuestas en estas categorías.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            data.respuestas.forEach(respuesta => {
+                const card = crearCardRespuesta(respuesta);
+                container.appendChild(card);
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar respuestas:', error);
+        container.innerHTML = '<div class="error">Error al cargar respuestas</div>';
+    }
+}
+
+// Cargar usuarios con respuestas
+async function cargarUsuariosConRespuestas() {
+    try {
+        const response = await fetch('admin_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'accion=listar_usuarios_con_respuestas'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const select = document.getElementById('filtroUsuarioRespuestas');
+            
+            select.innerHTML = '<option value="">Selecciona un usuario</option>';
+            
+            data.usuarios.forEach(usuario => {
+                select.innerHTML += `
+                    <option value="${usuario.id}">
+                        ${usuario.nombre} (${usuario.total_respuestas} respuestas)
+                    </option>
+                `;
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+    }
+}
+
+// Cargar respuestas por usuario
+async function cargarRespuestasPorUsuario() {
+    const usuarioId = document.getElementById('filtroUsuarioRespuestas').value;
+    const container = document.getElementById('listaRespuestasUsuario');
+    
+    if (!usuarioId) {
+        container.innerHTML = `
+            <div class="no-respuestas">
+                <div class="no-respuestas-icon">👤</div>
+                <p>Selecciona un usuario para ver sus respuestas</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '<div class="loading">Cargando respuestas...</div>';
+    
+    try {
+        const response = await fetch('admin_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `accion=obtener_respuestas_usuario&usuario_id=${usuarioId}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.respuestas.length === 0) {
+                container.innerHTML = `
+                    <div class="no-respuestas">
+                        <div class="no-respuestas-icon">📝</div>
+                        <p>Este usuario no ha enviado respuestas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            data.respuestas.forEach(respuesta => {
+                const card = crearCardRespuesta(respuesta);
+                container.appendChild(card);
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar respuestas:', error);
+        container.innerHTML = '<div class="error">Error al cargar respuestas</div>';
+    }
+}
+
+// Crear card de respuesta
+function crearCardRespuesta(respuesta) {
+    const card = document.createElement('div');
+    card.className = 'respuesta-card-admin';
+    card.id = `respuesta-${respuesta.id}`;
+    
+    const fecha = new Date(respuesta.fecha_respuesta).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    card.innerHTML = `
+        <div class="respuesta-header-admin">
+            <div class="respuesta-meta">
+                <h4>${respuesta.categoria_nombre}</h4>
+                <div class="meta-info">
+                    <div class="meta-item">
+                        <span>👤</span>
+                        <strong>${respuesta.usuario_nombre}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span>📧</span>
+                        ${respuesta.usuario_email}
+                    </div>
+                    <div class="meta-item">
+                        <span>📅</span>
+                        ${fecha}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="respuesta-contenido-admin">
+            <p class="respuesta-texto-admin">${escapeHtml(respuesta.respuesta)}</p>
+        </div>
+        
+        <div class="respuesta-actions">
+            <button class="btn-eliminar-respuesta-admin" onclick="eliminarRespuestaAdmin(${respuesta.id})">
+                🗑️ Eliminar Respuesta
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+
+// Eliminar respuesta (admin)
+async function eliminarRespuestaAdmin(respuestaId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta respuesta? Esta acción no se puede deshacer.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('admin_actions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `accion=eliminar_respuesta_admin&respuesta_id=${respuestaId}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Eliminar visualmente con animación
+            const card = document.getElementById(`respuesta-${respuestaId}`);
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                card.remove();
+                
+                // Verificar si quedan respuestas
+                const container = card.parentElement;
+                if (container.children.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-respuestas">
+                            <div class="no-respuestas-icon">📝</div>
+                            <p>No hay más respuestas</p>
+                        </div>
+                    `;
+                }
+            }, 300);
+            
+            mostrarMensajeAdmin(data.mensaje, 'success');
+        } else {
+            mostrarMensajeAdmin(data.mensaje, 'error');
+        }
+    } catch (error) {
+        console.error('Error al eliminar respuesta:', error);
+        mostrarMensajeAdmin('Error al eliminar la respuesta', 'error');
+    }
+}
+
+// Mostrar mensaje admin
+function mostrarMensajeAdmin(mensaje, tipo) {
+    // Crear o usar elemento de mensaje existente
+    let mensajeDiv = document.getElementById('mensajeAdminGlobal');
+    
+    if (!mensajeDiv) {
+        mensajeDiv = document.createElement('div');
+        mensajeDiv.id = 'mensajeAdminGlobal';
+        mensajeDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        document.body.appendChild(mensajeDiv);
+    }
+    
+    mensajeDiv.textContent = mensaje;
+    mensajeDiv.className = tipo === 'success' ? 'mensaje-exito' : 'mensaje-error';
+    mensajeDiv.style.display = 'block';
+    
+    setTimeout(() => {
+        mensajeDiv.style.display = 'none';
+    }, 3000);
+}
+
+// Función auxiliar para escapar HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+console.log('✅ admin-respuestas.js cargado');

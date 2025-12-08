@@ -1,6 +1,13 @@
 // Cargar formulario de respuesta de texto
+// Cargar formulario de respuesta de texto
 async function cargarFormularioTexto(categoriaId) {
     const container = document.getElementById(`formularioTexto-${categoriaId}`);
+    
+    // ✅ AGREGAR ESTA VALIDACIÓN
+    if (!container) {
+        console.warn(`⚠️ No existe el contenedor formularioTexto-${categoriaId}`);
+        return;
+    }
     
     try {
         // Verificar si ya tiene una respuesta

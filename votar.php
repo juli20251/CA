@@ -8,9 +8,7 @@ if (!estaLogueado()) {
     exit;
 }
 
-$categoriaId = $_POST['categoria_id'] ?? 0;
-$nominadoId = $_POST['nominado_id'] ?? 0;
-
+// Verificar si ya confirmó sus votos
 $stmt = $pdo->prepare("SELECT votos_confirmados FROM usuarios WHERE id = ?");
 $stmt->execute([$_SESSION['usuario_id']]);
 $usuario = $stmt->fetch();

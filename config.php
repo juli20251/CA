@@ -3,15 +3,41 @@
 ini_set('default_charset', 'UTF-8');
 mb_internal_encoding('UTF-8');
 
-// Mostrar errores solo en desarrollo (comentar en producción)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// ⚠️ IMPORTANTE: Comentar estas líneas en PRODUCCIÓN
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
-// Configuración de la base de datos
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'chechoawards');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// En producción, usar esto en su lugar:
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // No mostrar errores al público
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error_log.txt'); // Guardar errores en archivo
+
+// ========================================
+// CONFIGURACIÓN DE BASE DE DATOS
+// ========================================
+
+// Detectar si estamos en local o servidor
+$esLocal = (
+    $_SERVER['HTTP_HOST'] === 'localhost' || 
+    strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false ||
+    strpos($_SERVER['HTTP_HOST'], 'localhost:') === 0
+);
+
+if ($esLocal) {
+    // 💻 CONFIGURACIÓN LOCAL (DESARROLLO)
+    define('DB_HOST', 'https://mattprofe.com.ar/10014/');
+    define('DB_NAME', '10014');
+    define('DB_USER', '10014');
+    define('DB_PASS', 'perro.cipres.jugo');
+} else {
+    // 🌐 CONFIGURACIÓN SERVIDOR (PRODUCCIÓN)
+    // ⚠️ CAMBIAR ESTOS VALORES CON LOS DE TU HOSTING
+    define('DB_HOST', 'localhost');
+    define('DB_NAME', 'NOMBRE_DE_TU_BD');      // Ej: tuusuario_chechoawards
+    define('DB_USER', 'USUARIO_DE_TU_BD');     // Ej: tuusuario_dbuser
+    define('DB_PASS', 'CONTRASEÑA_DE_TU_BD');  // Tu contraseña de BD
+}
 
 // Configuración de la aplicación
 // Detectar automáticamente la URL base del proyecto
@@ -50,7 +76,13 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die("Error de conexión: " . $e->getMessage());
+    // En producción, no mostrar detalles del error
+    if ($esLocal) {
+        die("Error de conexión: " . $e->getMessage());
+    } else {
+        error_log("Error de conexión a BD: " . $e->getMessage());
+        die("Error de conexión a la base de datos. Por favor contacta al administrador.");
+    }
 }
 
 // Función para verificar si el usuario está logueado
